@@ -5,7 +5,7 @@ Created on Tue May 16 20:31:45 2023
 @author: 61721
 """
 
-from scripts.ticket import denoised_corr
+from scripts.stock import denoised_corr
 import pandas as pd
 import NCO_weights
 from datetime import timedelta
