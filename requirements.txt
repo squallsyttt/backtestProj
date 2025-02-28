@@ -79,3 +79,4 @@ platformdirs~=2.5.2
 importlib_metadata~=4.11.3
 importlib-metadata~=4.11.3
 seaborn~=0.11.2
+python-dotenv~=0.21.0
