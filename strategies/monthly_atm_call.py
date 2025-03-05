@@ -45,7 +45,9 @@ class MonthlySellATMCall(bt.Strategy):
         
         # 如果有持仓，检查是否需要展期（到期前7天）
         if self.current_option and self.current_expiry:
-            days_to_expiry = (self.current_expiry - current_date).days
+            # 将 datetime.datetime 转换为 datetime.date
+            expiry_date = self.current_expiry.date()
+            days_to_expiry = (expiry_date - current_date).days
             if days_to_expiry <= self.p.days_before_expiry:
                 self.roll_option(current_date)
     
