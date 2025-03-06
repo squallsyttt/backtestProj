@@ -162,8 +162,7 @@ class BacktestEngine:
             plt.show()
 
 
-def run_backtest(etf_data_file='data/stock_data.csv', option_data_file='data/option_data.csv', 
-                 cash=100000.0, commission=0.0003, days_before_expiry=7, printlog=True):
+def run_backtest(etf_data_file='data/stock_data.csv', option_data_file='data/option_data.csv', cash=100000.0, commission=0.0003, days_before_expiry=7, printlog=True):
     """
     运行中证500ETF期权策略回测的便捷函数
     
