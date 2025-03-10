@@ -35,7 +35,7 @@ class MonthlyATMCallStrategy:
         # 创建多层索引 (交易日期, 期权代码)
         self.options.set_index(['trade_date', 'ts_code'], inplace=True)
 
-    def _get_month_start_dates(self):
+    def _get_month_start_trade_dates(self):
         """获取每月首个交易日"""
         return self.etf.resample('MS').first().index
 
@@ -62,7 +62,7 @@ class MonthlyATMCallStrategy:
     def run_backtest(self):
         """运行回测"""
         # 获取所有调仓日期
-        rebalance_dates = self._get_month_start_dates()
+        rebalance_dates = self._get_month_start_trade_dates()
 
         for date in self.etf.index:
             # 检查是否需要展期
