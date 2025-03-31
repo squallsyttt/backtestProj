@@ -85,7 +85,6 @@ class DataFetcher:
         }
 
         ts_code_etf = etf_map.get(etf_type, '510500.SH')
-
         _etf_data = self.get_etf_price(ts_code_etf, start_date, end_date)
         # 通过etf数据 获取实际交易日
         trade_dates= _etf_data['trade_date'].dt.strftime('%Y%m%d').tolist()
@@ -94,6 +93,19 @@ class DataFetcher:
 
         opt_basic_data = self.get_opt_basic(exchange=exchange, start_date=start_date, end_date=end_date)
 
+        keyword_option = option_map.get(etf_type, '500ETF')
+
+        # TODO
+        # for date in trade_dates:
+            # try:
+                
+    
+
+    def get_opt_basic(self, exchange='SSE', start_date='20240101', end_date='20240105'):
+        ts_data = self.pro.opt_basic(
+            exchange=exchange,
+        )
+        # 获取后存到文件中
         curret_script_path = os.path.abspath(__file__)
         data_dir = os.path.dirname(curret_script_path)
         folder_path = os.path.join(data_dir, 'opt_basic',exchange)
@@ -101,20 +113,9 @@ class DataFetcher:
         opt_basic_file = os.path.join(folder_path, file_name)
 
         if not os.path.exists(opt_basic_file):
-            self.save_csv_data_simple(opt_basic_data, folder_path, file_name)
+            self.save_csv_data_simple(ts_data, folder_path, file_name)
         else:
             print(f"文件{opt_basic_file}已存在")
-
-        keyword_option = option_map.get(etf_type, '500ETF')
-
-
-
-    
-
-    def get_opt_basic(self, exchange='SSE', start_date='20240101', end_date='20240105'):
-        ts_data = self.pro.opt_basic(
-            exchange=exchange,
-        )
         return ts_data
 
     def get_etf_price(self, ts_code, start_date, end_date):
@@ -284,12 +285,6 @@ class DataFetcher:
         data.to_csv(file_path, index=False)
         print(f"数据已保存至 {file_path}")
         return 1
-
-
-    def fetcher_add(self,a,b):
-        return a+b
-
-
 
 if __name__ == '__main__':
     # 测试代码
