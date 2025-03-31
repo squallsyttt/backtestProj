@@ -73,18 +73,40 @@ class DataFetcher:
         else:
             return _etf_data, pd.DataFrame()
 
-    def prepare_backtest_date_origin(self, start_date, end_date, etf_type='500'):
+    def prepare_backtest_data_origin(self, start_date, end_date, etf_type='500', exchange='SSE'):
         etf_map = {
             '500': '510500.SH',
             '1000': '512100.SH'
         }
+
         ts_code = etf_map.get(etf_type, '510500.SH')
 
         _etf_data = self.get_etf_price(ts_code, start_date, end_date)
         # 通过etf数据 获取实际交易日
-        trade_dates = _etf_data['trade_date'].dt.strftime('%Y%m%d').tolist()
+        trade_dates= _etf_data['trade_date'].dt.strftime('%Y%m%d').tolist()
+        # 测试用return
+        # return trade_dates
 
+        opt_basic_data = self.get_opt_basic(exchange=exchange, start_date=start_date, end_date=end_date)
 
+        curret_script_path = os.path.abspath(__file__)
+        data_dir = os.path.dirname(curret_script_path)
+        folder_path = os.path.join(data_dir, 'opt_basic',exchange)
+        file_name = 'opt_basic_SSE.csv'
+        opt_basic_file = os.path.join(folder_path, file_name)
+
+        if not os.path.exists(opt_basic_file):
+            self.save_csv_data_simple(opt_basic_data, folder_path, file_name)
+        else:
+            print(f"文件{opt_basic_file}已存在")
+    
+
+    def get_opt_basic(self, exchange='SSE', start_date='20240101', end_date='20240105'):
+        ts_data = self.pro.opt_basic(
+            exchange=exchange,
+        )
+
+        return ts_data
 
     def get_etf_price(self, ts_code, start_date, end_date):
         """
@@ -129,7 +151,6 @@ class DataFetcher:
         }
 
         ts_code = etf_map.get(etf_type, '510500.SH')
-        option
 
 
 
@@ -244,6 +265,31 @@ class DataFetcher:
 
         print(f"ETF数据已保存至 {etf_file}")
         print(f"期权数据已保存至 {option_file}")
+#########################################################################################################
+    def save_csv_data_simple(self, data, folder_path, file_name):
+        """
+        保存数据到CSV文件
+        参数:
+            data (pandas.DataFrame): 要保存的数据
+            folder_path (str): 文件夹路径
+            file_name (str): 文件名称
+        """
+
+        print(f"尝试保存到: {folder_path+file_name}")
+        print(f"目录是否存在: {os.path.exists(folder_path)}")
+        print(f"写入权限: {os.access(folder_path, os.W_OK)}")
+
+        # 确保文件夹存在
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+
+        file_path = os.path.join(folder_path, file_name)
+        # 保存数据到CSV文件
+        data.to_csv(file_path, index=False)
+        print(f"数据已保存至 {file_path}")
+        return 1
+
+
 
     def fetcher_add(self,a,b):
         return a+b
@@ -261,11 +307,6 @@ if __name__ == '__main__':
         end_date = '20221231'
 
         print(f"正在获取{start_date}至{end_date}的数据...")
-        etf_data, option_data = fetcher.prepare_backtest_data(start_date, end_date)
-
-        # 保存数据
-        fetcher.save_data(etf_data, option_data)
-
         print("数据获取完成!")
     except Exception as e:
         print(f"数据获取失败: {e}")

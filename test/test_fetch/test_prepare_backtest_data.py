@@ -54,4 +54,4 @@ def test_prepare_back_data_origin():
     print(f"返回值类型：{type(res)}")
     print(f"返回值：{res}")
 
-    assert len(res) > expected
+    assert res > expected
