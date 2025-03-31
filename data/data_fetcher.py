@@ -79,9 +79,14 @@ class DataFetcher:
             '1000': '512100.SH'
         }
 
-        ts_code = etf_map.get(etf_type, '510500.SH')
+        option_map = {
+            '500': '500ETF',
+            '1000': '1000ETF'
+        }
 
-        _etf_data = self.get_etf_price(ts_code, start_date, end_date)
+        ts_code_etf = etf_map.get(etf_type, '510500.SH')
+
+        _etf_data = self.get_etf_price(ts_code_etf, start_date, end_date)
         # 通过etf数据 获取实际交易日
         trade_dates= _etf_data['trade_date'].dt.strftime('%Y%m%d').tolist()
         # 测试用return
@@ -99,13 +104,17 @@ class DataFetcher:
             self.save_csv_data_simple(opt_basic_data, folder_path, file_name)
         else:
             print(f"文件{opt_basic_file}已存在")
+
+        keyword_option = option_map.get(etf_type, '500ETF')
+
+
+
     
 
     def get_opt_basic(self, exchange='SSE', start_date='20240101', end_date='20240105'):
         ts_data = self.pro.opt_basic(
             exchange=exchange,
         )
-
         return ts_data
 
     def get_etf_price(self, ts_code, start_date, end_date):
@@ -137,21 +146,8 @@ class DataFetcher:
         return df
 
     def get_option_price(self, trade_date, etf_type='500'):
-        """
-        获取指定交易日的中证500ETF期权数据
-        参数:
-            trade_date (str): 交易日期，格式YYYYMMDD
-            etf_type (str): ETF类型，'500' 或 '1000'
-        返回:
-            pandas.DataFrame: 期权数据
-        """
-        etf_map = {
-            '500': '510500.SH',
-            '1000': '512100.SH'
-        }
-
-        ts_code = etf_map.get(etf_type, '510500.SH')
-
+        # TODO
+        return 1
 
 
     def get_atm_call_options(self, trade_date, etf_type):
@@ -265,7 +261,7 @@ class DataFetcher:
 
         print(f"ETF数据已保存至 {etf_file}")
         print(f"期权数据已保存至 {option_file}")
-#########################################################################################################
+
     def save_csv_data_simple(self, data, folder_path, file_name):
         """
         保存数据到CSV文件
@@ -288,7 +284,6 @@ class DataFetcher:
         data.to_csv(file_path, index=False)
         print(f"数据已保存至 {file_path}")
         return 1
-
 
 
     def fetcher_add(self,a,b):
