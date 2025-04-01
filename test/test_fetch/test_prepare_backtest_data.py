@@ -20,10 +20,7 @@ def ts_token():
 def data_fetcher(ts_token):
     return DataFetcher(ts_token)
 
-def test_prepare_backtest_option_data():
-    ts_token = "7e33b6a3e2bad955cd087c9e5a6e69ad34dc797daee4ff6de9cb08f7"
-    #创建 datafetcher对象
-    fetcher = DataFetcher(ts_token)
+def test_prepare_backtest_option_data(data_fetcher):
 
     start_date = "20240101"
     end_date = "20240105"
@@ -39,15 +36,10 @@ def test_prepare_backtest_option_data():
     # assert 'trade_date' in etf_data.column
 
 
-def test_prepare_back_data_origin():
-    ts_token = "7e33b6a3e2bad955cd087c9e5a6e69ad34dc797daee4ff6de9cb08f7"
-    print(f"token:{ts_token}")
-
-    
-    fetcher = DataFetcher(ts_token)
+def test_prepare_back_data_origin(data_fetcher):
     start_date = "20240101"
     end_date = "20240105"
-    res = fetcher.prepare_backtest_data_origin(start_date, end_date)
+    res = data_fetcher.prepare_backtest_data_origin(start_date, end_date)
 
     expected = 0
 
