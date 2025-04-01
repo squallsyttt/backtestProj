@@ -11,6 +11,15 @@ grand_parent_dir = os.path.dirname(parent_dir)
 sys.path.append(grand_parent_dir)
 from data.data_fetcher import DataFetcher
 
+
+@pytest.fixture
+def ts_token():
+    return "7e33b6a3e2bad955cd087c9e5a6e69ad34dc797daee4ff6de9cb08f7"
+
+@pytest.fixture
+def data_fetcher(ts_token):
+    return DataFetcher(ts_token)
+
 def test_prepare_backtest_option_data():
     ts_token = "7e33b6a3e2bad955cd087c9e5a6e69ad34dc797daee4ff6de9cb08f7"
     #创建 datafetcher对象
@@ -45,4 +54,8 @@ def test_prepare_back_data_origin():
     print(f"返回值类型：{type(res)}")
     print(f"返回值：{res}")
 
-    assert res > expected
+    assert len(res) > expected
+
+def test_get_option_chain(data_fetcher):
+    res = data_fetcher.get_option_chain("20240102", "500")
+    print(res)
