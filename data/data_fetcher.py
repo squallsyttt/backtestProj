@@ -91,8 +91,10 @@ class DataFetcher:
         # 测试用return
         # return trade_dates
 
+        # 获取基础期权数据
         opt_basic_data = self.get_opt_basic(exchange=exchange, start_date=start_date, end_date=end_date)
 
+        # 基础数据中筛选出指定的期权
         opt_specific_data = self.get_opt_specific(opt_basic_data, trade_dates, option_type=etf_type, exchange=exchange)
 
         return opt_specific_data
@@ -107,6 +109,7 @@ class DataFetcher:
     def get_opt_basic(self, exchange='SSE', start_date='20240101', end_date='20240105'):
         ts_data = self.pro.opt_basic(
             exchange=exchange,
+            fields='ts_code,name,opt_code,opt_type,call_put,exercise_price,maturity_date,list_date,delist_date'
         )
         # 获取后存到文件中
         curret_script_path = os.path.abspath(__file__)
