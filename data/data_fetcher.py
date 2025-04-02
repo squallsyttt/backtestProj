@@ -12,11 +12,24 @@ import os
 import numpy as np
 
 
+
+
+
 class DataFetcher:
     """
     数据获取类：负责从Tushare获取中证500ETF期权数据
     """
 
+    # 定义ETF和期权相关的常量映射
+    ETF_MAP = {
+        '500': '510500.SH',
+        '1000': '512100.SH'
+    }
+
+    OPTION_MAP = {
+        '500': '500ETF',
+        '1000': '1000ETF'
+    }
     def __init__(self, token=None):
         """
         初始化Tushare接口
@@ -45,11 +58,7 @@ class DataFetcher:
             tuple: (etf_data, option_data) 用于回测的ETF和期权数据
         """
 
-        etf_map = {
-            '500': '510500.SH',
-            '1000': '512100.SH'
-        }
-        ts_code = etf_map.get(etf_type, '510500.SH')
+        ts_code = self.ETF_MAP.get(etf_type, '510500.SH')
 
         # 获取ETF价格数据
         _etf_data = self.get_etf_price(ts_code, start_date, end_date)
@@ -74,17 +83,9 @@ class DataFetcher:
             return _etf_data, pd.DataFrame()
 
     def prepare_backtest_data_origin(self, start_date, end_date, etf_type='500', exchange='SSE'):
-        etf_map = {
-            '500': '510500.SH',
-            '1000': '512100.SH'
-        }
 
-        option_map = {
-            '500': '500ETF',
-            '1000': '1000ETF'
-        }
 
-        ts_code_etf = etf_map.get(etf_type, '510500.SH')
+        ts_code_etf = self.ETF_MAP.get(etf_type, '510500.SH')
         _etf_data = self.get_etf_price(ts_code_etf, start_date, end_date)
         # 通过etf数据 获取实际交易日
         trade_dates= _etf_data['trade_date'].dt.strftime('%Y%m%d').tolist()
@@ -125,11 +126,7 @@ class DataFetcher:
         return ts_data
 
     def get_opt_specific(self, opt_basic_data, trade_date, option_type='500', exchange='SSE'):
-        option_map = {
-            '500': '500ETF',
-            '1000': '1000ETF'
-        }
-        keyword_option = option_map.get(option_type, '500ETF')
+        keyword_option = self.OPTION_MAP.get(option_type, '500ETF')
         opt_500etf = opt_basic_data.loc[opt_basic_data['name'].str.contains(keyword_option)]
         current_script_path = os.path.abspath(__file__)
         data_dir = os.path.dirname(current_script_path)
@@ -187,12 +184,7 @@ class DataFetcher:
             pandas.DataFrame: 平值期权数据
         """
 
-        etf_map = {
-            '500': '510500.SH',
-            '1000': '512100.SH'
-        }
-
-        ts_code = etf_map.get(etf_type)
+        ts_code = self.ETF_MAP.get(etf_type)
         # 获取期权链
         option_chain = self.get_option_chain(trade_date, etf_type)
 
@@ -234,12 +226,7 @@ class DataFetcher:
             pandas.DataFrame: 期权链数据
         """
         # 获取期权基础信息
-        etf_map = {
-            '500': '510500.SH',
-            '1000': '512100.SH'
-        }
-
-        ts_code = etf_map.get(etf_type)
+        ts_code = self.ETF_MAP.get(etf_type)
 
         opt_basic = self.pro.opt_basic(
             exchange='SSE',
