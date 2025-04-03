@@ -92,7 +92,7 @@ class DataFetcher:
         opt_basic_data = self.processor.get_opt_basic(exchange=exchange, start_date=start_date, end_date=end_date)
 
         # 基础数据中筛选出指定的期权
-        opt_specific_data = self.processor.get_opt_specific(opt_basic_data, trade_dates, option_type=etf_type, exchange=exchange)
+        opt_specific_data = self.processor.get_opt_specific(opt_basic_data, trade_dates, option_type=etf_type, exchange=exchange, start_date=start_date, end_date=end_date)
         return opt_specific_data
 
         # 期权日数据获取

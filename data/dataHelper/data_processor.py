@@ -12,6 +12,10 @@ class DataProcessor:
     """
     数据处理辅助类：包含期权数据的处理和筛选逻辑
     """
+    ETF_TSCODE_MAP = {
+        '510500.SH':'500ETF',
+        '512100.SH':'1000ETF'
+    }
     
     OPTION_MAP = {
         '500': '500ETF',
@@ -27,7 +31,7 @@ class DataProcessor:
         """
         self.pro = pro_api
 
-    def get_opt_basic(self, exchange='SSE', start_date='20240101', end_date='20240105'):
+    def get_opt_basic(self, exchange, start_date, end_date):
         # 获取后存到文件中
         curret_script_path = os.path.abspath(__file__)
         data_dir = os.path.dirname(curret_script_path)
@@ -54,14 +58,13 @@ class DataProcessor:
             ts_data['delist_date'] = ts_data['delist_date'].astype(str)
         return ts_data
 
-    def get_opt_specific(self, opt_basic_data, trade_dates, option_type='500', exchange='SSE', start_date='20240101', end_date='20240105'):
+    def get_opt_specific(self, opt_basic_data, trade_dates, option_type, exchange, start_date, end_date):
         keyword_option = self.OPTION_MAP.get(option_type, '500ETF')
         opt_specific = opt_basic_data.loc[opt_basic_data['name'].str.contains(keyword_option)]
         current_script_path = os.path.abspath(__file__)
         data_dir = os.path.dirname(current_script_path)
         folder_path = os.path.join(data_dir, 'opt_specific', exchange)
-        file_name = 'opt_specific_500etf.csv'
-        file_name = f'opt_specific_500etf_{exchange}_{start_date}_{end_date}.csv'  # 修改文件名格式
+        file_name = f'opt_specific_{keyword_option}_{exchange}_{start_date}_{end_date}.csv'  # 修改文件名格式
         opt_specific_file = os.path.join(folder_path, file_name)
         if not os.path.exists(opt_specific_file):
             # 按照list_date升序排序
@@ -129,4 +132,30 @@ class DataProcessor:
         # 将日期列转换为datetime格式
         df['trade_date'] = pd.to_datetime(df['trade_date'])
 
-        return df
+        # return df
+
+        # 获取后存到文件中
+        keyword_etf = self.ETF_TSCODE_MAP.get(ts_code)
+        curret_script_path = os.path.abspath(__file__)
+        data_dir = os.path.dirname(curret_script_path)
+        folder_path = os.path.join(data_dir, 'etc_specific')
+        file_name = f'etf_specific_{keyword_etf}_{start_date}_{end_date}.csv'
+        etf_specific_file = os.path.join(folder_path, file_name)
+
+        if not os.path.exists(etf_specific_file):
+            ts_data = self.pro.fund_daily(
+            ts_code=ts_code,
+            start_date=start_date,
+            end_date=end_date,
+            fields='ts_code,trade_date,open,high,low,close,vol,amount'
+        )
+                
+            ts_data = ts_data.sort_values('trade_date')
+            self.save_csv_data_simple(ts_data, folder_path, file_name)
+        else:
+            print(f"文件{etf_specific_file}已存在")
+            ts_data = pd.read_csv(etf_specific_file)
+            # 确保日期字段是字符串类型（与Tushare返回格式一致）
+            ts_data['trade_date'] = ts_data['trade_date'].astype(str)
+        ts_data['trade_date'] = pd.to_datetime(ts_data['trade_date'])
+        return ts_data
