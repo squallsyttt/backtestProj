@@ -101,9 +101,10 @@ class DataProcessor:
         print(f"数据已保存至 {file_path}")
         return 1
     
-    # def get_opt_merge_data(self, opt_specific_data, trade_date, option_type='500', exchange='SSE'):
-    #     # TODO
-    #     for optinfo in opt_specific_data:
+    def get_opt_merge_data(self, opt_specific_data, trade_date):
+        # TODO
+        for optinfo in opt_specific_data:
+            print(optinfo)
             
 
     def get_etf_price(self, ts_code, start_date, end_date):
