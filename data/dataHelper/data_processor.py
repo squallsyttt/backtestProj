@@ -59,7 +59,7 @@ class DataProcessor:
         return ts_data
 
     def get_opt_specific(self, opt_basic_data, trade_dates, option_type, exchange, start_date, end_date):
-        keyword_option = self.OPTION_MAP.get(option_type, '500ETF')
+        keyword_option = self.OPTION_MAP.get(option_type)
         opt_specific = opt_basic_data.loc[opt_basic_data['name'].str.contains(keyword_option)]
         current_script_path = os.path.abspath(__file__)
         data_dir = os.path.dirname(current_script_path)
