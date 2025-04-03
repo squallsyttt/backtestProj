@@ -95,11 +95,11 @@ class DataFetcher:
         opt_specific_data = self.processor.get_opt_specific(opt_basic_data, trade_dates, option_type=etf_type, exchange=exchange)
 
         return opt_specific_data
-        # TODO 获取所有的日数据并且持久化到文件中
-        all_options = []
-        # for date in trade_dates:
-        #     try:
-        #         option = self
+        # 期权日数据获取
+        # opt_merge_data = self.processor.get_opt_merge_data(opt_specific_data, trade_dates, option_type=etf_type, exchange=exchange)
+
+        # return opt_merge_data
+
 
 
     def get_atm_call_options(self, trade_date, etf_type):

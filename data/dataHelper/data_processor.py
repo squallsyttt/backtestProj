@@ -28,36 +28,50 @@ class DataProcessor:
         self.pro = pro_api
 
     def get_opt_basic(self, exchange='SSE', start_date='20240101', end_date='20240105'):
-        ts_data = self.pro.opt_basic(
-            exchange=exchange,
-            fields='ts_code,name,opt_code,opt_type,call_put,exercise_price,maturity_date,list_date,delist_date'
-        )
         # 获取后存到文件中
         curret_script_path = os.path.abspath(__file__)
         data_dir = os.path.dirname(curret_script_path)
         folder_path = os.path.join(data_dir, 'opt_basic',exchange)
-        file_name = 'opt_basic_SSE.csv'
+        file_name = f'opt_basic_{exchange}_{start_date}_{end_date}.csv'  # 修改文件名格式
         opt_basic_file = os.path.join(folder_path, file_name)
 
         if not os.path.exists(opt_basic_file):
+            ts_data = self.pro.opt_basic(
+            exchange=exchange,
+            fields='ts_code,name,opt_code,opt_type,call_put,exercise_price,maturity_date,list_date,delist_date'
+        )
+                
+            ts_data = ts_data[
+                (ts_data['list_date'] >= start_date) &
+                (ts_data['delist_date'] <= end_date)
+            ]
             self.save_csv_data_simple(ts_data, folder_path, file_name)
         else:
             print(f"文件{opt_basic_file}已存在")
+            ts_data = pd.read_csv(opt_basic_file)
+            # 确保日期字段是字符串类型（与Tushare返回格式一致）
+            ts_data['list_date'] = ts_data['list_date'].astype(str)
+            ts_data['delist_date'] = ts_data['delist_date'].astype(str)
         return ts_data
 
-    def get_opt_specific(self, opt_basic_data, trade_date, option_type='500', exchange='SSE'):
+    def get_opt_specific(self, opt_basic_data, trade_dates, option_type='500', exchange='SSE', start_date='20240101', end_date='20240105'):
         keyword_option = self.OPTION_MAP.get(option_type, '500ETF')
-        opt_500etf = opt_basic_data.loc[opt_basic_data['name'].str.contains(keyword_option)]
+        opt_specific = opt_basic_data.loc[opt_basic_data['name'].str.contains(keyword_option)]
         current_script_path = os.path.abspath(__file__)
         data_dir = os.path.dirname(current_script_path)
         folder_path = os.path.join(data_dir, 'opt_specific', exchange)
         file_name = 'opt_specific_500etf.csv'
+        file_name = f'opt_specific_500etf_{exchange}_{start_date}_{end_date}.csv'  # 修改文件名格式
         opt_specific_file = os.path.join(folder_path, file_name)
         if not os.path.exists(opt_specific_file):
-            self.save_csv_data_simple(opt_500etf, folder_path, file_name)
+            self.save_csv_data_simple(opt_specific, folder_path, file_name)
         else:
             print(f"文件{opt_specific_file}已存在")
-        return opt_500etf
+            opt_specific = pd.read_csv(opt_specific_file)
+            # 确保日期字段是字符串类型（与Tushare返回格式一致）
+            opt_specific['list_date'] = opt_specific['list_date'].astype(str)
+            opt_specific['delist_date'] = opt_specific['delist_date'].astype(str)
+        return opt_specific
 
     def save_csv_data_simple(self, data, folder_path, file_name):
         """
@@ -82,6 +96,11 @@ class DataProcessor:
         print(f"数据已保存至 {file_path}")
         return 1
     
+    # def get_opt_merge_data(self, opt_specific_data, trade_date, option_type='500', exchange='SSE'):
+    #     # TODO
+    #     for optinfo in opt_specific_data:
+            
+
     def get_etf_price(self, ts_code, start_date, end_date):
         """
         获取指定ETF的价格数据
