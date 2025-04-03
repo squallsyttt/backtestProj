@@ -64,6 +64,8 @@ class DataProcessor:
         file_name = f'opt_specific_500etf_{exchange}_{start_date}_{end_date}.csv'  # 修改文件名格式
         opt_specific_file = os.path.join(folder_path, file_name)
         if not os.path.exists(opt_specific_file):
+            # 按照list_date升序排序
+            opt_specific = opt_specific.sort_values('ts_code')
             self.save_csv_data_simple(opt_specific, folder_path, file_name)
         else:
             print(f"文件{opt_specific_file}已存在")
