@@ -16,12 +16,13 @@ from data.data_fetcher import DataFetcher
 def ts_token():
     return "7e33b6a3e2bad955cd087c9e5a6e69ad34dc797daee4ff6de9cb08f7"
 
+
 @pytest.fixture
 def data_fetcher(ts_token):
     return DataFetcher(ts_token)
 
-def test_prepare_backtest_option_data(data_fetcher):
 
+def test_prepare_backtest_option_data(data_fetcher):
     start_date = "20240101"
     end_date = "20240105"
 
@@ -47,6 +48,7 @@ def test_prepare_back_data_origin(data_fetcher):
     print(f"返回值：{res}")
 
     assert len(res) > expected
+
 
 def test_get_option_chain(data_fetcher):
     res = data_fetcher.get_option_chain("20240102", "500")
