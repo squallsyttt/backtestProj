@@ -10,10 +10,7 @@ import pandas as pd
 import datetime
 import os
 import numpy as np
-
-
-
-
+from .dataHelper.data_processor import DataProcessor
 
 class DataFetcher:
     """
@@ -45,6 +42,7 @@ class DataFetcher:
 
         ts.set_token(token)
         self.pro = ts.pro_api()
+        self.processor = DataProcessor(self.pro)
 
     def prepare_backtest_data(self, start_date, end_date, etf_type='500'):
         """
@@ -61,7 +59,7 @@ class DataFetcher:
         ts_code = self.ETF_MAP.get(etf_type, '510500.SH')
 
         # 获取ETF价格数据
-        _etf_data = self.get_etf_price(ts_code, start_date, end_date)
+        _etf_data = self.processor.get_etf_price(ts_code, start_date, end_date)
 
         # 获取期间内的所有交易日
         trade_dates = _etf_data['trade_date'].dt.strftime('%Y%m%d').tolist()
@@ -86,17 +84,15 @@ class DataFetcher:
 
 
         ts_code_etf = self.ETF_MAP.get(etf_type, '510500.SH')
-        _etf_data = self.get_etf_price(ts_code_etf, start_date, end_date)
+        _etf_data = self.processor.get_etf_price(ts_code_etf, start_date, end_date)
         # 通过etf数据 获取实际交易日
         trade_dates= _etf_data['trade_date'].dt.strftime('%Y%m%d').tolist()
-        # 测试用return
-        # return trade_dates
 
         # 获取基础期权数据
-        opt_basic_data = self.get_opt_basic(exchange=exchange, start_date=start_date, end_date=end_date)
+        opt_basic_data = self.processor.get_opt_basic(exchange=exchange, start_date=start_date, end_date=end_date)
 
         # 基础数据中筛选出指定的期权
-        opt_specific_data = self.get_opt_specific(opt_basic_data, trade_dates, option_type=etf_type, exchange=exchange)
+        opt_specific_data = self.processor.get_opt_specific(opt_basic_data, trade_dates, option_type=etf_type, exchange=exchange)
 
         return opt_specific_data
         # TODO 获取所有的日数据并且持久化到文件中
@@ -104,72 +100,6 @@ class DataFetcher:
         # for date in trade_dates:
         #     try:
         #         option = self
-
-        
-
-    def get_opt_basic(self, exchange='SSE', start_date='20240101', end_date='20240105'):
-        ts_data = self.pro.opt_basic(
-            exchange=exchange,
-            fields='ts_code,name,opt_code,opt_type,call_put,exercise_price,maturity_date,list_date,delist_date'
-        )
-        # 获取后存到文件中
-        curret_script_path = os.path.abspath(__file__)
-        data_dir = os.path.dirname(curret_script_path)
-        folder_path = os.path.join(data_dir, 'opt_basic',exchange)
-        file_name = 'opt_basic_SSE.csv'
-        opt_basic_file = os.path.join(folder_path, file_name)
-
-        if not os.path.exists(opt_basic_file):
-            self.save_csv_data_simple(ts_data, folder_path, file_name)
-        else:
-            print(f"文件{opt_basic_file}已存在")
-        return ts_data
-
-    def get_opt_specific(self, opt_basic_data, trade_date, option_type='500', exchange='SSE'):
-        keyword_option = self.OPTION_MAP.get(option_type, '500ETF')
-        opt_500etf = opt_basic_data.loc[opt_basic_data['name'].str.contains(keyword_option)]
-        current_script_path = os.path.abspath(__file__)
-        data_dir = os.path.dirname(current_script_path)
-        folder_path = os.path.join(data_dir, 'opt_specific', exchange)
-        file_name = 'opt_specific_500etf.csv'
-        opt_specific_file = os.path.join(folder_path, file_name)
-        if not os.path.exists(opt_specific_file):
-            self.save_csv_data_simple(opt_500etf, folder_path, file_name)
-        else:
-            print(f"文件{opt_specific_file}已存在")
-        return opt_500etf
-
-    def get_etf_price(self, ts_code, start_date, end_date):
-        """
-        获取指定ETF的价格数据
-
-        参数:
-            ts_code (str): ETF的代码，如 '510500.SH' 或 '512100.SH'
-            start_date (str): 开始日期，格式YYYYMMDD
-            end_date (str): 结束日期，格式YYYYMMDD
-
-        返回:
-            pandas.DataFrame: 指定ETF的价格数据
-        """
-        # 获取指定ETF的日线数据
-        df = self.pro.fund_daily(
-            ts_code=ts_code,
-            start_date=start_date,
-            end_date=end_date,
-            fields='ts_code,trade_date,open,high,low,close,vol,amount'
-        )
-
-        # 按日期升序排序
-        df = df.sort_values('trade_date')
-
-        # 将日期列转换为datetime格式
-        df['trade_date'] = pd.to_datetime(df['trade_date'])
-
-        return df
-
-    def get_option_price(self, trade_date, etf_type='500'):
-        # TODO
-        return 1
 
 
     def get_atm_call_options(self, trade_date, etf_type):
@@ -257,56 +187,14 @@ class DataFetcher:
 
         return merged_data
 
-    def save_data(self, etf_data, option_data, etf_file='data/stock_data.csv', option_file='data/option_data.csv'):
-        """
-        保存数据到CSV文件
-
-        参数:
-            etf_data (pandas.DataFrame): ETF数据
-            option_data (pandas.DataFrame): 期权数据
-            etf_file (str): ETF数据保存路径
-            option_file (str): 期权数据保存路径
-        """
-        etf_data.to_csv(etf_file, index=False)
-        if not option_data.empty:
-            option_data.to_csv(option_file, index=False)
-
-        print(f"ETF数据已保存至 {etf_file}")
-        print(f"期权数据已保存至 {option_file}")
-
-    def save_csv_data_simple(self, data, folder_path, file_name):
-        """
-        保存数据到CSV文件
-        参数:
-            data (pandas.DataFrame): 要保存的数据
-            folder_path (str): 文件夹路径
-            file_name (str): 文件名称
-        """
-
-        print(f"尝试保存到: {folder_path+file_name}")
-        print(f"目录是否存在: {os.path.exists(folder_path)}")
-        print(f"写入权限: {os.access(folder_path, os.W_OK)}")
-
-        # 确保文件夹存在
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
-
-        file_path = os.path.join(folder_path, file_name)
-        # 保存数据到CSV文件
-        data.to_csv(file_path, index=False)
-        print(f"数据已保存至 {file_path}")
-        return 1
-
 if __name__ == '__main__':
     # 测试代码
     # 注意：运行前需要设置TUSHARE_TOKEN环境变量或在初始化时提供token
     try:
         fetcher = DataFetcher()
-
         # 获取2022年的数据
         start_date = '20220101'
         end_date = '20221231'
-
         print(f"正在获取{start_date}至{end_date}的数据...")
         print("数据获取完成!")
     except Exception as e:
