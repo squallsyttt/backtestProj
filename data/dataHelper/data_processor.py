@@ -7,6 +7,7 @@
 
 import pandas as pd
 import os
+import time
 
 
 class DataProcessor:
@@ -103,17 +104,63 @@ class DataProcessor:
         print(f"数据已保存至 {file_path}")
         return 1
 
-    def get_opt_merge_data(self, opt_specific_data):
-        merged_data = []
-        # TODO
-        for opt_specific_item in opt_specific_data:
-            print(opt_specific_item)
+    def get_opt_merge_data(self, opt_specific_data, trade_dates, exchange, start_date, end_date):
+        """
+        获取期权基础信息与日线数据的合并数据
+        
+        参数:
+            opt_specific_data (DataFrame): 期权基础信息数据
+            exchange (str): 交易所代码
+            start_date (str): 开始日期，格式YYYYMMDD
+            end_date (str): 结束日期，格式YYYYMMDD
+            
+        返回:
+            DataFrame: 合并后的数据
+        """
+        merged_data = pd.DataFrame()
+        
+        for opt_specific_item in opt_specific_data.itertuples():
+            # print(f"处理合约: {opt_specific_item['ts_code']}")
+
+            # tushare 限制每分钟150次接口请求
+            # time.sleep(0.5)  # 避免请求过快
+            
             # 合约的所有交易日数据
             opt_dailys = self.pro.opt_daily(
-                ts_code=opt_specific_item['ts_code'],
-                exchange=opt_specific_item['exchange'],
+                ts_code=opt_specific_item.ts_code,
                 fields='ts_code,trade_date,pre_settle,pre_close,open,high,low,close,settle,vol,amount'
             )
+            
+            if opt_dailys.empty:
+                print(f"合约 {opt_specific_item.ts_code} 没有交易数据")
+                continue
+                
+            # 将期权基础信息添加到每一行日线数据中
+            # for col in opt_specific_data.columns:
+            #     if col != 'ts_code':  # ts_code已经在opt_dailys中
+            #         opt_dailys[col] = opt_specific_item[col]
+
+            # 或者使用 assign 方法一次性添加所有列 (解包)
+            opt_dailys = opt_dailys.assign(**{col: getattr(opt_specific_item, col) for col in opt_specific_data.columns if col != 'ts_code'})
+            
+            # 将 opt_dailys 追加到 merged_data
+            merged_data = pd.concat([merged_data, opt_dailys], ignore_index=True)
+
+        # 如果没有数据，返回空DataFrame
+        if merged_data.empty:
+            print("没有找到任何合并数据")
+            return pd.DataFrame()
+            
+        # 保存到CSV文件
+        keyword_option = opt_specific_data['name'].iloc[0].split('购')[0].split('沽')[0]  # 提取ETF名称
+        current_script_path = os.path.abspath(__file__)
+        data_dir = os.path.dirname(current_script_path)
+        folder_path = os.path.join(data_dir, 'opt_merged', exchange)
+        file_name = f'opt_merged_{keyword_option}_{exchange}_{start_date}_{end_date}.csv'
+        
+        self.save_csv_data_simple(merged_data, folder_path, file_name)
+        
+        return merged_data
 
     def get_etf_price(self, ts_code, start_date, end_date):
         """
