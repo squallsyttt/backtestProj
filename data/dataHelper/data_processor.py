@@ -124,7 +124,7 @@ class DataProcessor:
             # print(f"处理合约: {opt_specific_item['ts_code']}")
 
             # tushare 限制每分钟150次接口请求
-            time.sleep(0.5)  # 避免请求过快
+            time.sleep(0.4)  # 避免请求过快
             
             # 合约的所有交易日数据
             opt_dailys = self.pro.opt_daily(
@@ -151,6 +151,8 @@ class DataProcessor:
         if merged_data.empty:
             print("没有找到任何合并数据")
             return pd.DataFrame()
+        
+        merged_data = merged_data.sort_values(by=['ts_code', 'trade_date'])
             
         # 保存到CSV文件
         current_script_path = os.path.abspath(__file__)
