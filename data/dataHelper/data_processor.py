@@ -104,7 +104,7 @@ class DataProcessor:
         print(f"数据已保存至 {file_path}")
         return 1
 
-    def get_opt_merge_data(self, opt_specific_data, trade_dates, exchange, start_date, end_date):
+    def get_opt_merge_data(self, opt_specific_data, trade_dates, option_type, exchange, start_date, end_date):
         """
         获取期权基础信息与日线数据的合并数据
         
@@ -118,12 +118,13 @@ class DataProcessor:
             DataFrame: 合并后的数据
         """
         merged_data = pd.DataFrame()
+        keyword_option = self.OPTION_MAP.get(option_type)
         
         for opt_specific_item in opt_specific_data.itertuples():
             # print(f"处理合约: {opt_specific_item['ts_code']}")
 
             # tushare 限制每分钟150次接口请求
-            # time.sleep(0.5)  # 避免请求过快
+            time.sleep(0.5)  # 避免请求过快
             
             # 合约的所有交易日数据
             opt_dailys = self.pro.opt_daily(
@@ -152,7 +153,6 @@ class DataProcessor:
             return pd.DataFrame()
             
         # 保存到CSV文件
-        keyword_option = opt_specific_data['name'].iloc[0].split('购')[0].split('沽')[0]  # 提取ETF名称
         current_script_path = os.path.abspath(__file__)
         data_dir = os.path.dirname(current_script_path)
         folder_path = os.path.join(data_dir, 'opt_merged', exchange)

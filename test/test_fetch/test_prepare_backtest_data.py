@@ -39,8 +39,8 @@ def test_prepare_backtest_option_data(data_fetcher):
 
 def test_prepare_back_data_origin(data_fetcher):
     start_date = "20240101"
-    end_date = "20240131"
-    res = data_fetcher.prepare_backtest_data_origin(start_date, end_date)
+    end_date = "20241231"
+    res = data_fetcher.prepare_backtest_data_origin(start_date, end_date, '500', 'SSE')
 
     expected = 0
 
