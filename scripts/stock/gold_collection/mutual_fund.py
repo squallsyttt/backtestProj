@@ -5,9 +5,9 @@ Created on Tue May 16 20:31:45 2023
 @author: 61721
 """
 
-from scripts.stock import denoised_corr
+from scripts.stock.gold_collection import denoised_corr
 import pandas as pd
-import NCO_weights
+import scripts.stock.gold_collection.NCO_weights as NCO_weights
 from datetime import timedelta
 import numpy as np
 import matplotlib.pylab as plt
