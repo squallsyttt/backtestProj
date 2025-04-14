@@ -60,9 +60,9 @@ class DataFetcher:
         # return opt_specific_data
 
         # 期权日数据获取
-        opt_merge_data = self.processor.get_opt_merge_data(opt_specific_data, trade_dates, option_type=etf_type, exchange=exchange, start_date=start_date, end_date=end_date)
+        opt_merged_data = self.processor.get_opt_merge_data(opt_specific_data, trade_dates, option_type=etf_type, exchange=exchange, start_date=start_date, end_date=end_date)
 
-        return _etf_data, opt_merge_data
+        return _etf_data, opt_merged_data
 
 if __name__ == '__main__':
     # 测试代码

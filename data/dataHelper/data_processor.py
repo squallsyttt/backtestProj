@@ -58,6 +58,7 @@ class DataProcessor:
             # 确保日期字段是字符串类型（与Tushare返回格式一致）
             ts_data['list_date'] = ts_data['list_date'].astype(str)
             ts_data['delist_date'] = ts_data['delist_date'].astype(str)
+            ts_data['name'] = ts_data['name'].astype(str)
         return ts_data
 
     def get_opt_specific(self, opt_basic_data, trade_dates, option_type, exchange, start_date, end_date):
@@ -125,6 +126,8 @@ class DataProcessor:
         folder_path = os.path.join(data_dir, 'opt_merged', exchange)
         file_name = f'opt_merged_{keyword_option}_{exchange}_{start_date}_{end_date}.csv'
         opt_merged_file = os.path.join(folder_path, file_name)
+        print(f"合并文件路径: {opt_merged_file}")
+        # return 777
         if not os.path.exists(opt_merged_file):
             for opt_specific_item in opt_specific_data.itertuples():
                 # tushare 限制每分钟150次接口请求
